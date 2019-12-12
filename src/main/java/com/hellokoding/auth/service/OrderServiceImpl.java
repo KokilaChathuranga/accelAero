@@ -28,6 +28,6 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order getOrderByCustomerAndId(Customer customer, long id) {
-        return orderRepository.findByCustomerAndOrOrderId(customer, id);
+        return orderRepository.findByCustomerAndOrderId(customer, id);
     }
 }

@@ -6,5 +6,5 @@ import com.hellokoding.auth.model.Customer;
 import com.hellokoding.auth.model.Order;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    Order findByCustomerAndOrOrderId(Customer customer, long id);
+    Order findByCustomerAndOrderId(Customer customer, long id);
 }
