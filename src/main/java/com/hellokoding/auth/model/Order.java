@@ -27,6 +27,8 @@ public class Order {
     private Long quantity;
     private Date orderDate;
     private Date pickupTime;
+    private Long unitPrice;
+    private Long totalPrice;
     @CreationTimestamp
     private Date createdAt;
     @UpdateTimestamp
@@ -102,5 +104,21 @@ public class Order {
 
     public void setModifiedAt(Date modifiedAt) {
         this.modifiedAt = modifiedAt;
+    }
+
+    public Long getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(Long unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public Long getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(Long totalPrice) {
+        this.totalPrice = totalPrice;
     }
 }

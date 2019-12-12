@@ -5,7 +5,8 @@ public enum ResponseStatus {
 	SUCCESS(0),
 	ERROR(1),
 	INVALID_CUSTOMER(2),
-	BAD_REQUEST(3);
+	BAD_REQUEST(3),
+	ERROR_FROM_CONSUMER(4);
 
 	private int status;
 

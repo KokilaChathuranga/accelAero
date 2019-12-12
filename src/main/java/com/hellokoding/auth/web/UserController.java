@@ -3,17 +3,8 @@ package com.hellokoding.auth.web;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.ExecutionException;
 
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.header.internals.RecordHeader;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
-import org.springframework.kafka.requestreply.RequestReplyFuture;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.kafka.support.SendResult;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -34,6 +25,7 @@ import com.hellokoding.auth.model.Customer;
 import com.hellokoding.auth.model.Order;
 import com.hellokoding.auth.model.User;
 import com.hellokoding.auth.service.CustomerService;
+import com.hellokoding.auth.service.KafkaService;
 import com.hellokoding.auth.service.OrderService;
 import com.hellokoding.auth.service.SecurityService;
 import com.hellokoding.auth.service.UserService;
@@ -46,17 +38,13 @@ public class UserController {
     @Autowired
     OrderService orderService;
     @Autowired
-    ReplyingKafkaTemplate<String, Message, Message> kafkaTemplate;
-    @Value("${kafka.topic.request-topic}")
-    String requestTopic;
-    @Value("${kafka.topic.requestreply-topic}")
-    String requestReplyTopic;
-    @Autowired
     private UserService userService;
     @Autowired
     private SecurityService securityService;
     @Autowired
     private UserValidator userValidator;
+    @Autowired
+    private KafkaService kafkaService;
 
     @GetMapping("/registration")
     public String registration(Model model) {
@@ -96,33 +84,6 @@ public class UserController {
         return "welcome";
     }
 
-    @GetMapping(value = "/sum")
-    public Object sum() throws InterruptedException, ExecutionException {
-        Message request = new Message();
-        request.setField1("12");
-        request.setField2("12");
-        // create producer record
-        ProducerRecord<String, Message> record = new ProducerRecord<String, Message>(requestTopic, request);
-        // set reply topic in header
-        record.headers().add(new RecordHeader(KafkaHeaders.REPLY_TOPIC, requestReplyTopic.getBytes()));
-        // post in kafka topic
-        RequestReplyFuture<String, Message, Message> sendAndReceive = kafkaTemplate.sendAndReceive(record);
-
-        // confirm if producer produced successfully
-        SendResult<String, Message> sendResult = sendAndReceive.getSendFuture().get();
-
-        //print all headers
-        sendResult.getProducerRecord().headers().forEach(header -> System.out.println(header.key() + ":" + header.value().toString()));
-
-        // get consumer record
-        ConsumerRecord<String, Message> consumerRecord = sendAndReceive.get();
-        // return consumer value
-        System.out.println(consumerRecord.value().getField1());
-        System.out.println(consumerRecord.value().getField2());
-        System.out.println(consumerRecord.value().getAdditionalProperties().get("sum"));
-        return consumerRecord.value();
-    }
-
     @GetMapping({"/customer"})
     public Response<Customer> getCustomer() {
         return new Response<>(customerService.findByUser(getUser()), ResponseStatus.SUCCESS, "Customer get ok");
@@ -142,30 +103,17 @@ public class UserController {
     public Response<String> getRestaurantAndFoods(
             @RequestParam(value = "restaurant") String restaurant,
             @RequestParam(value = "food", required = false) String food
-    ) throws ExecutionException, InterruptedException {
-        Message request = new Message();
-        request.setField1(restaurant);
-        request.setField2(food);
-        // create producer record
-        ProducerRecord<String, Message> record = new ProducerRecord<String, Message>(requestTopic, request);
-        // set reply topic in header
-        record.headers().add(new RecordHeader(KafkaHeaders.REPLY_TOPIC, requestReplyTopic.getBytes()));
-        // post in kafka topic
-        RequestReplyFuture<String, Message, Message> sendAndReceive = kafkaTemplate.sendAndReceive(record);
-
-        // confirm if producer produced successfully
-        SendResult<String, Message> sendResult = sendAndReceive.getSendFuture().get();
-
-        //print all headers
-        sendResult.getProducerRecord().headers().forEach(header -> System.out.println(header.key() + ":" + header.value().toString()));
-
-        // get consumer record
-        ConsumerRecord<String, Message> consumerRecord = sendAndReceive.get();
-        // return consumer value
-        System.out.println(consumerRecord.value().getField1());
-        System.out.println(consumerRecord.value().getField2());
-        System.out.println(consumerRecord.value().getAdditionalProperties().get("result"));
-        return new Response<>((String)consumerRecord.value().getAdditionalProperties().get("result"), ResponseStatus.SUCCESS, "Customer get ok");
+    ) {
+        Message message = new Message();
+        message.setField1(restaurant);
+        message.setField2(food);
+        message = kafkaService.getReplyFromConsumer(message);
+        if (message == null)
+            return new Response<>(null, ResponseStatus.ERROR_FROM_CONSUMER, "Error occurred while getting response from consumer");
+        System.out.println(message.getField1());
+        System.out.println(message.getField2());
+        System.out.println(message.getAdditionalProperties().get("result"));
+        return new Response<>((String) message.getAdditionalProperties().get("result"), ResponseStatus.SUCCESS, "restaurant get ok");
     }
 
     @PostMapping("/order/create")
