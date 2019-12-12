@@ -113,6 +113,8 @@ public class UserController {
         System.out.println(message.getField1());
         System.out.println(message.getField2());
         System.out.println(message.getAdditionalProperties().get("result"));
+        System.out.println(message.getRestaurants().iterator().next().getName());
+        System.out.println(message.getFoods().iterator().next().getName());
         return new Response<>((String) message.getAdditionalProperties().get("result"), ResponseStatus.SUCCESS, "restaurant get ok");
     }
 
