@@ -121,23 +121,26 @@ public class UserController {
             @RequestParam(value = "restaurant_id") long restaurant_id,
             @RequestParam(value = "food_id") long food_id,
             @RequestParam(value = "quantity") long quantity,
-            @RequestParam(value = "order_date") String order_date
+            @RequestParam(value = "order_date") String order_date,
+            @RequestParam(value = "quantity") long unit_price,
+            @RequestParam(value = "quantity") long total_price
     ) {
         Customer customer = customerService.findByUser(getUser());
         try {
             Date orderDate = parseDate("dd/MM/yyyy", order_date);
-            return new Response<>(orderService.create(customer, restaurant_id, food_id, quantity, orderDate), ResponseStatus.SUCCESS, "Order created successfully");
+            return new Response<>(orderService.create(customer, restaurant_id, food_id, quantity, orderDate, unit_price, total_price), ResponseStatus.SUCCESS, "Order created successfully");
         } catch (ParseException e) {
             return new Response<>(null, ResponseStatus.ERROR, "Invalid date format");
         }
     }
 
     @GetMapping("/order/{order_id}")
-    public Response<Customer> getOrder(
+    public Response<Order> getOrder(
             @PathVariable long order_id
     ) {
-        // TODO: 12/10/19 implement
-        return new Response<>(customerService.findByUser(getUser()), ResponseStatus.SUCCESS, "Customer get ok");
+        Customer customer = customerService.findByUser(getUser());
+        orderService.getOrderByCustomerAndId(customer, order_id);
+        return new Response<>(orderService.getOrderByCustomerAndId(customer, order_id), ResponseStatus.SUCCESS, "Customer get ok");
     }
 
     private User getUser() {

@@ -15,12 +15,19 @@ public class OrderServiceImpl implements OrderService {
     OrderRepository orderRepository;
 
     @Override
-    public Order create(Customer customer, long restaurantId, long foodId, long quantity, Date orderDate) {
+    public Order create(Customer customer, long restaurantId, long foodId, long quantity, Date orderDate, long unitPrice, long totalPrice) {
         Order order = new Order();
         order.setCustomer(customer);
         order.setRestaurantId(restaurantId);
         order.setFoodId(foodId);
         order.setOrderDate(orderDate);
+        order.setUnitPrice(unitPrice);
+        order.setTotalPrice(totalPrice);
         return orderRepository.save(order);
+    }
+
+    @Override
+    public Order getOrderByCustomerAndId(Customer customer, long id) {
+        return orderRepository.findByCustomerAndOrOrderId(customer, id);
     }
 }
