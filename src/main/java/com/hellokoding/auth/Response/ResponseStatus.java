@@ -1,20 +1,20 @@
 package com.hellokoding.auth.Response;
 
 public enum ResponseStatus {
-	UNKNOWN_ERROR(-1),
-	SUCCESS(0),
-	ERROR(1),
-	INVALID_CUSTOMER(2),
-	BAD_REQUEST(3),
-	ERROR_FROM_CONSUMER(4);
+    UNKNOWN_ERROR(-1),
+    SUCCESS(0),
+    ERROR(1),
+    INVALID_CUSTOMER(2),
+    BAD_REQUEST(3),
+    ERROR_FROM_CONSUMER(4);
 
-	private int status;
+    private int status;
 
-	ResponseStatus(int i) {
-		this.status = i;
-	}
+    ResponseStatus(int i) {
+        this.status = i;
+    }
 
-	public int getStatus() {
-		return status;
-	}
+    public int getStatus() {
+        return status;
+    }
 }

@@ -17,8 +17,10 @@ public class Food {
     private String restaurantId;
     @JsonProperty("name")
     private String name;
+
     public Food() {
     }
+
     public Food(String foodId, String restaurantId, String name) {
         this.foodId = foodId;
         this.restaurantId = restaurantId;
