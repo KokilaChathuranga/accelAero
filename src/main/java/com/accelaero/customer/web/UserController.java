@@ -18,8 +18,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.accelaero.customer.Response.Response;
+import com.accelaero.customer.Response.ResponseStatus;
 import com.accelaero.customer.kafka.model.Message;
 import com.accelaero.customer.model.Customer;
+import com.accelaero.customer.model.Order;
 import com.accelaero.customer.model.User;
 import com.accelaero.customer.service.CustomerService;
 import com.accelaero.customer.service.KafkaService;
@@ -27,9 +30,6 @@ import com.accelaero.customer.service.OrderService;
 import com.accelaero.customer.service.SecurityService;
 import com.accelaero.customer.service.UserService;
 import com.accelaero.customer.validator.UserValidator;
-import com.accelaero.customer.Response.Response;
-import com.accelaero.customer.Response.ResponseStatus;
-import com.accelaero.customer.model.Order;
 
 @RestController
 //@Controller
@@ -55,18 +55,16 @@ public class UserController {
     }
 
     @PostMapping("/registration")
-    public String registration(@ModelAttribute("userForm") User userForm, BindingResult bindingResult) {
+    public Response<User> registration(@ModelAttribute("userForm") User userForm, BindingResult bindingResult) {
         userValidator.validate(userForm, bindingResult);
 
         if (bindingResult.hasErrors()) {
-            return "registration";
+            return new Response<>(userForm, ResponseStatus.ERROR, "Validation failed for username and password");
         }
-
-        userService.save(userForm);
-
+        userForm = userService.save(userForm);
         securityService.autoLogin(userForm.getUsername(), userForm.getPasswordConfirm());
-
-        return "redirect:/welcome";
+        //return "redirect:/welcome";
+        return new Response<>(userForm, ResponseStatus.SUCCESS, "Customer get ok");
     }
 
     @GetMapping("/login")
