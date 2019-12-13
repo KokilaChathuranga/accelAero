@@ -7,7 +7,6 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
@@ -17,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.hellokoding.auth.Response.Response;
 import com.hellokoding.auth.Response.ResponseStatus;
@@ -31,7 +31,8 @@ import com.hellokoding.auth.service.SecurityService;
 import com.hellokoding.auth.service.UserService;
 import com.hellokoding.auth.validator.UserValidator;
 
-@Controller
+@RestController
+//@Controller
 public class UserController {
     @Autowired
     CustomerService customerService;
@@ -85,7 +86,12 @@ public class UserController {
     }
 
     @GetMapping({"/customer"})
-    public Response<Customer> getCustomer() {
+    public Response<Customer> getCustomer(Model model) {
+        Customer customer = customerService.findByUser(getUser());
+        model.addAttribute("firstName", customer.getFirstName());
+        model.addAttribute("lastName", customer.getLastName());
+        model.addAttribute("email", customer.getEmail());
+        model.addAttribute("mobileNo", customer.getMobileNo());
         return new Response<>(customerService.findByUser(getUser()), ResponseStatus.SUCCESS, "Customer get ok");
     }
 
@@ -100,7 +106,7 @@ public class UserController {
     }
 
     @GetMapping("/restaurant")
-    public Response<String> getRestaurantAndFoods(
+    public Response<Message> getRestaurantAndFoods(
             @RequestParam(value = "restaurant") String restaurant,
             @RequestParam(value = "food", required = false) String food
     ) {
@@ -115,7 +121,7 @@ public class UserController {
         System.out.println(message.getAdditionalProperties().get("result"));
         System.out.println(message.getRestaurants().iterator().next().getName());
         System.out.println(message.getFoods().iterator().next().getName());
-        return new Response<>((String) message.getAdditionalProperties().get("result"), ResponseStatus.SUCCESS, "restaurant get ok");
+        return new Response<>(message, ResponseStatus.SUCCESS, "restaurant get ok");
     }
 
     @PostMapping("/order/create")
