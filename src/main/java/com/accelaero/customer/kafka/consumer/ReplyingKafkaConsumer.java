@@ -21,10 +21,14 @@ public class ReplyingKafkaConsumer {
 
         request.setAdditionalProperty("result", request.getField1().concat(" ").concat(request.getField2().concat(" ").concat("return result for search")));
         Set<Restaurant> restaurants = new HashSet<>();
-        restaurants.add(new Restaurant("1", "pns ltd"));
+        if (request.getField1().contains("pns"))restaurants.add(new Restaurant("1", "PNS pvt ltd"));
+        if (request.getField1().contains("pizza hut"))restaurants.add(new Restaurant("2", "Pizza Hut"));
         request.setRestaurants(restaurants);
         Set<Food> foods = new HashSet<>();
-        foods.add(new Food("1", "1", "rice"));
+        if (request.getField2().contains("rice"))foods.add(new Food("1", "1", "vegetable fried rice"));
+        if (request.getField2().contains("rice"))foods.add(new Food("2", "1", "mixed fried rice"));
+        if (request.getField2().contains("pizza"))foods.add(new Food("3", "2", "regular pizza"));
+        if (request.getField2().contains("pizza"))foods.add(new Food("4", "2", "cheese pizza"));
         request.setFoods(foods);
         return request;
     }

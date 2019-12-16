@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -47,19 +46,13 @@ public class UserController {
     @Autowired
     private KafkaService kafkaService;
 
-    @GetMapping("/registration")
-    public String registration(Model model) {
-        model.addAttribute("userForm", new User());
 
-        return "registration";
-    }
-
+    // Register user
     @PostMapping("/registration")
-    public Response<User> registration(@ModelAttribute("userForm") User userForm, BindingResult bindingResult) {
-        userValidator.validate(userForm, bindingResult);
-
-        if (bindingResult.hasErrors()) {
-            return new Response<>(userForm, ResponseStatus.ERROR, "Validation failed for username and password");
+    public Response<User> registration(@ModelAttribute("userForm") User userForm) {
+        ResponseStatus validationResponse = userValidator.validate(userForm);
+        if (validationResponse != ResponseStatus.SUCCESS) {
+            return new Response<>(userForm, validationResponse, String.valueOf(validationResponse));
         }
         userForm = userService.save(userForm);
         securityService.autoLogin(userForm.getUsername(), userForm.getPasswordConfirm());
@@ -67,30 +60,9 @@ public class UserController {
         return new Response<>(userForm, ResponseStatus.SUCCESS, "Customer get ok");
     }
 
-    @GetMapping("/login")
-    public String login(Model model, String error, String logout) {
-        if (error != null)
-            model.addAttribute("error", "Your username and password is invalid.");
-
-        if (logout != null)
-            model.addAttribute("message", "You have been logged out successfully.");
-
-        return "login";
-    }
-
     @GetMapping({"/", "/welcome"})
     public String welcome(Model model) {
-        return "welcome";
-    }
-
-    @GetMapping({"/customer"})
-    public Response<Customer> getCustomer(Model model) {
-        Customer customer = customerService.findByUser(getUser());
-        model.addAttribute("firstName", customer.getFirstName());
-        model.addAttribute("lastName", customer.getLastName());
-        model.addAttribute("email", customer.getEmail());
-        model.addAttribute("mobileNo", customer.getMobileNo());
-        return new Response<>(customerService.findByUser(getUser()), ResponseStatus.SUCCESS, "Customer get ok");
+        return "welcome " + getUser().getUsername();
     }
 
     @PostMapping("/customer/update")
@@ -101,6 +73,12 @@ public class UserController {
             return new Response<>(null, ResponseStatus.INVALID_CUSTOMER, "Customer id is invalid");
         }
         return new Response<>(customerService.update(user, customer, existingCustomer), ResponseStatus.SUCCESS, "Customer updated successfully");
+    }
+
+    @GetMapping({"/customer"})
+    public Response<Customer> getCustomer(Model model) {
+        Customer customer = customerService.findByUser(getUser());
+        return new Response<>(customer, ResponseStatus.SUCCESS, "Customer get ok");
     }
 
     @GetMapping("/restaurant")
@@ -157,4 +135,19 @@ public class UserController {
     private Date parseDate(String format, String value) throws ParseException {
         return (value == null || value.isEmpty()) ? null : new SimpleDateFormat(format).parse(value);
     }
+
+    /*@GetMapping("/registration")
+    public String registration(Model model) {
+        model.addAttribute("userForm", new User());
+        return "registration";
+    }
+
+    @GetMapping("/login")
+    public String login(Model model, String error, String logout) {
+        if (error != null)
+            model.addAttribute("error", "Your username and password is invalid.");
+        if (logout != null)
+            model.addAttribute("message", "You have been logged out successfully.");
+        return "login";
+    }*/
 }

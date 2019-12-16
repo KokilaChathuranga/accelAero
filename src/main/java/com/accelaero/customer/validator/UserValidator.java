@@ -1,42 +1,40 @@
 package com.accelaero.customer.validator;
 
-import com.accelaero.customer.model.User;
-import com.accelaero.customer.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.Errors;
-import org.springframework.validation.ValidationUtils;
-import org.springframework.validation.Validator;
+
+import com.accelaero.customer.Response.ResponseStatus;
+import com.accelaero.customer.model.User;
+import com.accelaero.customer.service.UserService;
 
 @Component
-public class UserValidator implements Validator {
+public class UserValidator {
     @Autowired
     private UserService userService;
 
-    @Override
-    public boolean supports(Class<?> aClass) {
-        return User.class.equals(aClass);
-    }
-
-    @Override
-    public void validate(Object o, Errors errors) {
+    public ResponseStatus validate(Object o) {
         User user = (User) o;
 
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "username", "NotEmpty");
+        if (user.getUsername() == null || user.getUsername().isEmpty()) {
+            return ResponseStatus.EMPTY_USER_NAME;
+        }
         if (user.getUsername().length() < 6 || user.getUsername().length() > 32) {
-            errors.rejectValue("username", "Size.userForm.username");
+            return ResponseStatus.INVALID_LENGTH_FOR_USER_NAME;
         }
         if (userService.findByUsername(user.getUsername()) != null) {
-            errors.rejectValue("username", "Duplicate.userForm.username");
+            return ResponseStatus.DUPLICATE_USER_NAME;
+        }
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            return ResponseStatus.EMPTY_PASSwORD;
         }
 
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "password", "NotEmpty");
         if (user.getPassword().length() < 8 || user.getPassword().length() > 32) {
-            errors.rejectValue("password", "Size.userForm.password");
+            return ResponseStatus.INVALID_LENGTH_FOR_PASSWORD;
         }
 
         if (!user.getPasswordConfirm().equals(user.getPassword())) {
-            errors.rejectValue("passwordConfirm", "Diff.userForm.passwordConfirm");
+            return ResponseStatus.PASSWORDS_DOES_NOT_MATCH;
         }
+        return ResponseStatus.SUCCESS;
     }
 }
