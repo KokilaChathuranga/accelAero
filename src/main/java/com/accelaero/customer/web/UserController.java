@@ -69,14 +69,11 @@ public class UserController {
     public Response<Customer> updateCustomer(@Validated @RequestBody Customer customer) {
         User user = getUser();
         Customer existingCustomer = customerService.findByUser(user);
-        if (existingCustomer == null) {
-            return new Response<>(null, ResponseStatus.INVALID_CUSTOMER, "Customer id is invalid");
-        }
         return new Response<>(customerService.update(user, customer, existingCustomer), ResponseStatus.SUCCESS, "Customer updated successfully");
     }
 
     @GetMapping({"/customer"})
-    public Response<Customer> getCustomer(Model model) {
+    public Response<Customer> getCustomer() {
         Customer customer = customerService.findByUser(getUser());
         return new Response<>(customer, ResponseStatus.SUCCESS, "Customer get ok");
     }
@@ -92,11 +89,11 @@ public class UserController {
         message = kafkaService.getReplyFromConsumer(message);
         if (message == null)
             return new Response<>(null, ResponseStatus.ERROR_FROM_CONSUMER, "Error occurred while getting response from consumer");
-        System.out.println(message.getField1());
+        /*System.out.println(message.getField1());
         System.out.println(message.getField2());
         System.out.println(message.getAdditionalProperties().get("result"));
         System.out.println(message.getRestaurants().iterator().next().getName());
-        System.out.println(message.getFoods().iterator().next().getName());
+        System.out.println(message.getFoods().iterator().next().getName());*/
         return new Response<>(message, ResponseStatus.SUCCESS, "restaurant get ok");
     }
 
@@ -106,8 +103,8 @@ public class UserController {
             @RequestParam(value = "food_id") long food_id,
             @RequestParam(value = "quantity") long quantity,
             @RequestParam(value = "order_date") String order_date,
-            @RequestParam(value = "quantity") long unit_price,
-            @RequestParam(value = "quantity") long total_price
+            @RequestParam(value = "unit_price") long unit_price,
+            @RequestParam(value = "total_price") long total_price
     ) {
         Customer customer = customerService.findByUser(getUser());
         try {

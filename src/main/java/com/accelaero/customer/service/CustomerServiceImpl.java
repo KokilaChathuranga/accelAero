@@ -14,7 +14,6 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customer update(User user, Customer customer, Customer existingCustomer) {
-
         if (existingCustomer != null) {
             existingCustomer.setEmail(customer.getEmail());
             existingCustomer.setFirstName(customer.getFirstName());
