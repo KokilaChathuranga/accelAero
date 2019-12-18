@@ -1,10 +1,15 @@
 import request from '@/utils/request';
+
 export async function fakeAccountLogin(params) {
-  return request('/api/login/account', {
+  return request('/foodorder/user/login', {
     method: 'POST',
     data: params,
+    body: {
+      ...params,
+      method: 'post'
+    }
   });
 }
 export async function getFakeCaptcha(mobile) {
-  return request(`/api/login/captcha?mobile=${mobile}`);
+  return request(`/foodorder/user/login/captcha?mobile=${mobile}`);
 }
