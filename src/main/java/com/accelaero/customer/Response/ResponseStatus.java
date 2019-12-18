@@ -12,7 +12,8 @@ public enum ResponseStatus {
     DUPLICATE_USER_NAME(7),
     EMPTY_PASSwORD(8),
     INVALID_LENGTH_FOR_PASSWORD(9),
-    PASSWORDS_DOES_NOT_MATCH(10);
+    PASSWORDS_DOES_NOT_MATCH(10),
+    AUTHENTICATION_FAILED(11);
 
     private int status;
 
